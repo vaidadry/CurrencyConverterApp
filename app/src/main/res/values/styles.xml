@@ -1,0 +1,47 @@
+<resources >
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar.Bridge">
+        <item name="colorPrimary">@color/blue_light</item>
+        <item name="colorPrimaryDark">@color/blue_dark</item>
+        <item name="colorAccent">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="SplashScreen" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/bg_gradient</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+    </style>
+
+    <style name="ColorfulButton" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/btn_rounded</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/label_text_size_medium</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="ToolBar" parent="AppTheme">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_gradient</item>
+        <item name="android:theme">@style/AppTheme.ToolbarFont</item>
+    </style>
+
+    <style name="AppTheme.ToolbarFont" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="android:textSize">20sp</item>
+        <item name="titleTextColor">@color/white</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="SpinnerTheme" parent="android:Widget.Spinner">
+        <item name="android:background">@drawable/bg_spinner</item>
+        <item name="android:spinnerMode">dropdown</item>
+    </style>
+
+</resources>
