@@ -10,5 +10,4 @@ fun Window.setStatusBar(context: Context) {
     this.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
     this.statusBarColor = ContextCompat.getColor(context, android.R.color.transparent)
     this.setBackgroundDrawableResource(R.drawable.bg_gradient)
-
 }

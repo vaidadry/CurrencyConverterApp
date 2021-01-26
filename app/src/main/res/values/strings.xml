@@ -1,11 +1,25 @@
 <resources>
     <string name="app_name">Currency converter</string>
-    <string name="converter.balancesLabel">My balances</string>
+    <string name="converter_balancesLabel">My balances</string>
     <string name="converter_exchangeLabel">Currency exchange</string>
     <string name="converter_sellLabel">Sell</string>
     <string name="converter_receiveLabel">Receive</string>
-    <string name="converter_buttonLabel">Convert</string>
+    <string name="converter_buttonLabel">Submit</string>
     <string name="converter_hintText">Enter</string>
+    <string name="converter_retry">Retry</string>%.2f
+    <string name="balance_item_converted">+ %s</string>
+    <string name="balance_item_placeholder">%.2f %s</string>
+    <string name="converter_dialog_message">You have converted %1s %2s to %3s %4s. Commission Fee - %5s%6s.</string>
+    <string name="converter_dialog_message_no_fee">"You have converted %1s %2s to %3s %4s."</string>
+    <string name="converter_dialog_title">Currency converted</string>
+    <string name="converter_dialog_button">Done</string>
+    <string name="converter_error">Error</string>
+    <string name="converter_error_invalid_operation">Invalid operation</string>
+    <string name="converter_error_invalid_amount">Invalid amount</string>
+    <string name="converter_error_unexpected">Unexpected error</string>
+    <string name="converter_error_internet">Couldn\'t reach server. Check your internet connection</string>
+    <string name="converter_error_currencyNotOwned">You do not own this currency</string>
+    <string name="converter_error_fundsNotSufficient">Not sufficient funds</string>
     <string-array name="currency_codes">
         <item>CAD</item>
         <item>EUR</item>

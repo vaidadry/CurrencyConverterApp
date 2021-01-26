@@ -16,7 +16,6 @@ class MainActivity : AppCompatActivity() {
         setTheme(R.style.AppTheme)
         binding = ActivityMainBinding.inflate(layoutInflater)
         window.setStatusBar(this)
-
         setContentView(binding.root)
     }
 }

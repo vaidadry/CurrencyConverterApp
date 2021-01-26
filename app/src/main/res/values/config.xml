@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="defaultCurrencySelected">EUR</string>
+    <string name="defaultApiSyncTime">5000</string>
+</resources>

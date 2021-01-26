@@ -1,110 +1,92 @@
 package vaida.dryzaite.currencyconverter.ui.converterfragment
 
+import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import vaida.dryzaite.currencyconverter.data.model.Rates
-import vaida.dryzaite.currencyconverter.repository.MainRepository
+import kotlinx.coroutines.withContext
+import vaida.dryzaite.currencyconverter.R
+import vaida.dryzaite.currencyconverter.data.db.UserBalance
+import vaida.dryzaite.currencyconverter.util.ConverterManager
 import vaida.dryzaite.currencyconverter.util.DispatcherProvider
-import vaida.dryzaite.currencyconverter.util.Resource
-import java.lang.Math.round
 
 class ConverterFragmentViewModel @ViewModelInject constructor(
-    private val repository: MainRepository,
+    private val manager: ConverterManager,
     private val dispatchers: DispatcherProvider
 ) : ViewModel() {
 
-    //event class - that represents events that will be send from VM to UI
-    sealed class CurrencyEvent {
-        class Success(val resultText: String): CurrencyEvent()
-        class Failure(val errorText: String): CurrencyEvent()
-        object Loading: CurrencyEvent()
-        object Empty: CurrencyEvent()
+    private val _balanceUpdate =
+        MutableStateFlow<ConverterManager.BalanceUpdateEvent>(ConverterManager.BalanceUpdateEvent.Empty)
+    val balanceUpdate: StateFlow<ConverterManager.BalanceUpdateEvent> = _balanceUpdate
+
+    private val _conversion =
+        MutableStateFlow<ConverterManager.ExchangeEvent>(ConverterManager.ExchangeEvent.Empty)
+    val conversion: StateFlow<ConverterManager.ExchangeEvent> = _conversion
+
+    private val _amountInput = MutableLiveData<String>()
+    val amountInput: LiveData<String> = _amountInput
+
+    fun updateInputQuery(input: String) {
+        _amountInput.value = input
     }
 
-    private val _conversion = MutableStateFlow<CurrencyEvent>(
-        CurrencyEvent.Empty
-    )
-    val conversion: StateFlow<CurrencyEvent> = _conversion
+    private val _balances = MutableLiveData<List<UserBalance>>()
+    val balances: LiveData<List<UserBalance>> = _balances
 
-    fun convert(
-        amountStr: String,
-        fromCurrency: String,
-        toCurrency: String
-    ) {
-        val fromAmount = amountStr.toFloatOrNull()
-        if (fromAmount == null) {
-            _conversion.value =
-                CurrencyEvent.Failure(
-                    "Invalid amount"
-                )
-            return
-        }
-
+    fun getInitBalances() {
         viewModelScope.launch(dispatchers.io) {
-            _conversion.value =
-                CurrencyEvent.Loading
-            when(val responseRates = repository.getRates(fromCurrency)) {
-                is Resource.Error -> _conversion.value =
-                    CurrencyEvent.Failure(
-                        responseRates.message!!
-                    )
-                is Resource.Success -> {
-                    val rates = responseRates.data!!.rates
-                    val rate = getRateForCurrency(toCurrency, rates)
-                    if (rate == null) {
-                        _conversion.value =
-                            CurrencyEvent.Failure(
-                                "Unexpected error"
-                            )
-                    } else {
-                        val convertedCurrency = round(fromAmount * rate * 100) / 100 // makes sure that 2 digits after comma only
-                        _conversion.value =
-                            CurrencyEvent.Success(
-                                "+ $convertedCurrency"
-                            )
-                    }
-                }
+            val balanceList = manager.getBalances()
+            withContext(dispatchers.main) {
+                _balances.value = balanceList
             }
         }
     }
 
-    private fun getRateForCurrency(currency: String, rates: Rates) = when (currency) {
-        "CAD" -> rates.cAD
-        "HKD" -> rates.hKD
-        "ISK" -> rates.iSK
-        "EUR" -> rates.eUR
-        "PHP" -> rates.pHP
-        "DKK" -> rates.dKK
-        "HUF" -> rates.hUF
-        "CZK" -> rates.cZK
-        "AUD" -> rates.aUD
-        "RON" -> rates.rON
-        "SEK" -> rates.sEK
-        "IDR" -> rates.iDR
-        "INR" -> rates.iNR
-        "BRL" -> rates.bRL
-        "RUB" -> rates.rUB
-        "HRK" -> rates.hRK
-        "JPY" -> rates.jPY
-        "THB" -> rates.tHB
-        "CHF" -> rates.cHF
-        "SGD" -> rates.sGD
-        "PLN" -> rates.pLN
-        "BGN" -> rates.bGN
-        "CNY" -> rates.cNY
-        "NOK" -> rates.nOK
-        "NZD" -> rates.nZD
-        "ZAR" -> rates.zAR
-        "USD" -> rates.uSD
-        "MXN" -> rates.mXN
-        "ILS" -> rates.iLS
-        "GBP" -> rates.gBP
-        "KRW" -> rates.kRW
-        "MYR" -> rates.mYR
-        else -> null
+    fun updateBalances(
+        context: Context,
+        fromAmountStr: String,
+        fromCurrency: String,
+        toCurrency: String,
+        toAmountStr: String
+    ) {
+        val fromAmount = fromAmountStr.toDoubleOrNull()
+        val toAmount = toAmountStr.drop(1).toDoubleOrNull()
+        if (fromAmount == null || toAmount == null) {
+            _balanceUpdate.value = ConverterManager.BalanceUpdateEvent.Failure(context.getString(R.string.converter_error_invalid_operation))
+            return
+        }
+        viewModelScope.launch(dispatchers.io) {
+            val result = manager.updateBalances(
+                fromCurrency,
+                fromAmount,
+                toCurrency,
+                toAmount,
+                context
+            )
+            _balanceUpdate.value = result
+        }
+    }
+
+    fun convert(
+        context: Context,
+        amountStr: String,
+        fromCurrency: String,
+        toCurrency: String
+    ) {
+        val fromAmount = amountStr.toDoubleOrNull()
+        if (fromAmount == null) {
+            _conversion.value = ConverterManager.ExchangeEvent.Failure(context.getString(R.string.converter_error_invalid_amount))
+            return
+        }
+        viewModelScope.launch(dispatchers.io) {
+            _conversion.value = ConverterManager.ExchangeEvent.Loading
+            val response = manager.getRates(fromCurrency, fromAmount, toCurrency, context)
+            _conversion.value = response
+        }
     }
 }

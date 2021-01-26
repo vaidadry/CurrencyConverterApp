@@ -30,9 +30,8 @@ abstract class BaseFragment <VM : ViewModel, T : ViewDataBinding> : Fragment() {
         if (navSettings == null) {
             binding = DataBindingUtil.inflate(inflater, layoutId, container, false)
             mainView = binding.root
-
         } else {
-            // TODO switch to viewbinding?
+            // TODO switch to VB
             val baseFragment = inflater.inflate(R.layout.toolbar, container, false) as ViewGroup
             binding = DataBindingUtil.inflate(inflater, layoutId, baseFragment, false)
             baseFragment.toolbarFragmentContent.removeAllViews()
