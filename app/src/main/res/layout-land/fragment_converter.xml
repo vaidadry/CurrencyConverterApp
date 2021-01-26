@@ -19,7 +19,7 @@
             android:id="@+id/tvConverterBalances"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingVertical="@dimen/margin_x2"
+            android:paddingVertical="@dimen/margin_default"
             android:paddingHorizontal="@dimen/margin_default"
             android:text="@string/converter_balancesLabel"
             android:textAllCaps="true"
@@ -43,7 +43,7 @@
             android:id="@+id/tvConverterCurrencyExchange"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/margin_x2"
+            android:paddingTop="@dimen/margin_default"
             android:paddingHorizontal="@dimen/margin_default"
             android:text="@string/converter_exchangeLabel"
             android:textAllCaps="true"
@@ -122,6 +122,7 @@
             android:src="@drawable/btn_receive"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ivConverterSell"
+            app:layout_constraintBottom_toTopOf="@id/btnConverterConvert"
             android:contentDescription="@null" />
 
         <TextView
@@ -163,6 +164,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/ivConverterReceive"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ivConverterSell" />
+
         <View
             android:layout_width="0dp"
             android:layout_height="0.5dp"
@@ -171,16 +173,19 @@
             app:layout_constraintStart_toEndOf="@id/ivConverterReceive"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/ivConverterReceive"/>
+
         <android.widget.Button
             android:id="@+id/btnConverterConvert"
             style="@style/ColorfulButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/converter_buttonLabel"
+            android:layout_marginBottom="@dimen/margin_default"
             android:textColor="@color/textColorInv"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/guideline" />
+            app:layout_constraintTop_toBottomOf="@+id/spConverterToCurrency" />
 
         <ProgressBar
             android:id="@+id/progressBarConverter"
@@ -194,12 +199,6 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:visibility="visible" />
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.55" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guidelineVertical"
