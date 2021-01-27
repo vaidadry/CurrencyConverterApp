@@ -6,7 +6,7 @@ import vaida.dryzaite.currencyconverter.data.db.UserBalance
 import vaida.dryzaite.currencyconverter.data.db.UserOperation
 import vaida.dryzaite.currencyconverter.data.model.Rates
 import vaida.dryzaite.currencyconverter.repository.MainRepository
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.round
 

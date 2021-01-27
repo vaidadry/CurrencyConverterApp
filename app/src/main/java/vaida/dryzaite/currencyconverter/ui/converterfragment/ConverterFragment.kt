@@ -2,6 +2,7 @@ package vaida.dryzaite.currencyconverter.ui.converterfragment
 
 import android.os.Bundle
 import android.view.View
+import android.widget.AdapterView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -10,18 +11,24 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collect
 import vaida.dryzaite.currencyconverter.R
 import vaida.dryzaite.currencyconverter.databinding.FragmentConverterBinding
 import vaida.dryzaite.currencyconverter.ui.BaseFragment
 import vaida.dryzaite.currencyconverter.util.ConverterManager
 import vaida.dryzaite.currencyconverter.util.NavigationSettings
+import java.util.Timer
+import java.util.TimerTask
 import javax.inject.Inject
-import kotlin.concurrent.fixedRateTimer
 
+@ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentViewModel, FragmentConverterBinding>() {
     private val balanceAdapter = BalancesAdapter()
+    private var searchJob: Job? = null
 
     override val navigationSettings: NavigationSettings? by lazy {
         NavigationSettings(requireContext().getString(R.string.app_name))
@@ -43,6 +50,12 @@ class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentVi
         setupRecyclerView()
 
         viewModel.amountInput.observe(viewLifecycleOwner, Observer {
+            initConvert()
+        })
+        viewModel.currencyFromInput.observe(viewLifecycleOwner, Observer {
+            initConvert()
+        })
+        viewModel.currencyToInput.observe(viewLifecycleOwner, Observer {
             initConvert()
         })
 
@@ -112,15 +125,33 @@ class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentVi
     }
 
     private fun initConvert() {
-        fixedRateTimer(
-            period = requireContext().getString(R.string.defaultApiSyncTime).toLong(),
-            initialDelay = 0L) {
-            viewModel.convert(
-                requireContext(),
-                binding.etConverterFrom.text.toString(),
-                binding.spConverterFromCurrency.selectedItem.toString(),
-                binding.spConverterToCurrency.selectedItem.toString()
-            )
+        searchJob?.cancel()
+        searchJob = CoroutineScope(Dispatchers.IO).launch {
+            tickFlow(5000L).collect {
+                viewModel.convert(
+                    requireContext(),
+                    binding.etConverterFrom.text.toString(),
+                    binding.spConverterFromCurrency.selectedItem.toString(),
+                    binding.spConverterToCurrency.selectedItem.toString()
+                )
+            }
+        }
+    }
+
+    private fun tickFlow(millis: Long) = callbackFlow {
+        val timer = Timer()
+        var time = 0
+        timer.scheduleAtFixedRate(
+            object : TimerTask() {
+                override fun run() {
+                    try { offer(time) } catch (e: Exception) {}
+                    time += 1
+                }
+            },
+            0,
+            millis)
+        awaitClose {
+            timer.cancel()
         }
     }
 
@@ -150,6 +181,24 @@ class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentVi
                 if (it.isNotEmpty()) {
                     viewModel.updateInputQuery(it.toString())
                 }
+            }
+        }
+        binding.spConverterFromCurrency.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selected = resources.getStringArray(R.array.currency_codes)[position]
+                viewModel.updateCurrencyFromQuery(selected)
+            }
+        }
+        binding.spConverterToCurrency.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selected = resources.getStringArray(R.array.currency_codes)[position]
+                viewModel.updateCurrencyFromQuery(selected)
             }
         }
     }

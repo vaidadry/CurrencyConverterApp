@@ -35,6 +35,20 @@ class ConverterFragmentViewModel @ViewModelInject constructor(
         _amountInput.value = input
     }
 
+    private val _currencyFromInput = MutableLiveData<String>()
+    val currencyFromInput: LiveData<String> = _currencyFromInput
+
+    fun updateCurrencyFromQuery(input: String) {
+        _currencyFromInput.value = input
+    }
+
+    private val _currencyToInput = MutableLiveData<String>()
+    val currencyToInput: LiveData<String> = _currencyToInput
+
+    fun updateCurrencyToQuery(input: String) {
+        _currencyToInput.value = input
+    }
+
     private val _balances = MutableLiveData<List<UserBalance>>()
     val balances: LiveData<List<UserBalance>> = _balances
 
@@ -72,7 +86,7 @@ class ConverterFragmentViewModel @ViewModelInject constructor(
         }
     }
 
-    fun convert(
+    suspend fun convert(
         context: Context,
         amountStr: String,
         fromCurrency: String,
