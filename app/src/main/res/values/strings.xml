@@ -8,7 +8,7 @@
     <string name="converter_hintText">Enter</string>
     <string name="converter_retry">Retry</string>%.2f
     <string name="balance_item_converted">+ %s</string>
-    <string name="balance_item_placeholder">%.2f %s</string>
+    <string name="balance_item_placeholder">%s %2s</string>
     <string name="converter_dialog_message">You have converted %1s %2s to %3s %4s. Commission Fee - %5s%6s.</string>
     <string name="converter_dialog_message_no_fee">"You have converted %1s %2s to %3s %4s."</string>
     <string name="converter_dialog_title">Currency converted</string>

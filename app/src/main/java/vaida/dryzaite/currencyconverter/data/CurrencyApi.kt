@@ -8,7 +8,5 @@ import vaida.dryzaite.currencyconverter.data.model.CurrencyResponse
 interface CurrencyApi {
 
     @GET("/latest")
-    suspend fun getRates(
-        @Query("base") base: String
-    ): Response<CurrencyResponse>
+    suspend fun getRates(@Query("base") base: String): Response<CurrencyResponse>
 }

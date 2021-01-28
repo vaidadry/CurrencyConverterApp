@@ -6,5 +6,5 @@ import io.realm.annotations.PrimaryKey
 open class UserBalance(
     @PrimaryKey
     var currency: String = "",
-    var amount: Double = 0.0
+    var amount: String = ""
 ) : RealmObject()

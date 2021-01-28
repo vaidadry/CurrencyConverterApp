@@ -1,6 +1,5 @@
 package vaida.dryzaite.currencyconverter.ui.converterfragment
 
-import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -62,7 +61,6 @@ class ConverterFragmentViewModel @ViewModelInject constructor(
     }
 
     fun updateBalances(
-        context: Context,
         fromAmountStr: String,
         fromCurrency: String,
         toCurrency: String,
@@ -71,7 +69,10 @@ class ConverterFragmentViewModel @ViewModelInject constructor(
         val fromAmount = fromAmountStr.toDoubleOrNull()
         val toAmount = toAmountStr.drop(1).toDoubleOrNull()
         if (fromAmount == null || toAmount == null) {
-            _balanceUpdate.value = ConverterManager.BalanceUpdateEvent.Failure(context.getString(R.string.converter_error_invalid_operation))
+            _balanceUpdate.value =
+                ConverterManager.BalanceUpdateEvent.Failure(
+                    R.string.converter_error_invalid_operation
+                )
             return
         }
         viewModelScope.launch(dispatchers.io) {
@@ -79,27 +80,31 @@ class ConverterFragmentViewModel @ViewModelInject constructor(
                 fromCurrency,
                 fromAmount,
                 toCurrency,
-                toAmount,
-                context
+                toAmount
             )
             _balanceUpdate.value = result
         }
     }
 
     suspend fun convert(
-        context: Context,
         amountStr: String,
         fromCurrency: String,
         toCurrency: String
     ) {
         val fromAmount = amountStr.toDoubleOrNull()
         if (fromAmount == null) {
-            _conversion.value = ConverterManager.ExchangeEvent.Failure(context.getString(R.string.converter_error_invalid_amount))
+            _conversion.value = ConverterManager.ExchangeEvent.Failure(
+                R.string.converter_error_invalid_amount
+            )
             return
         }
         viewModelScope.launch(dispatchers.io) {
             _conversion.value = ConverterManager.ExchangeEvent.Loading
-            val response = manager.getRates(fromCurrency, fromAmount, toCurrency, context)
+            val response = manager.getRates(
+                fromCurrency,
+                fromAmount,
+                toCurrency
+            )
             _conversion.value = response
         }
     }
