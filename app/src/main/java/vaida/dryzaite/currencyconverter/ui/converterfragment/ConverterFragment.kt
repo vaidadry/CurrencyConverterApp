@@ -12,11 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collect
@@ -51,7 +47,7 @@ class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentVi
         )
         setupInputListener()
         observeBalances()
-        viewModel.getInitBalances()
+        viewModel.channel.offer(ConverterFragmentViewModel.ConverterEvents.InitBalancesEvent)
         setupRecyclerView()
 
         viewModel.amountInput.observe(viewLifecycleOwner, Observer {
@@ -65,11 +61,13 @@ class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentVi
         })
 
         binding.btnConverterConvert.setOnClickListener {
-            viewModel.updateBalances(
+            viewModel.channel.offer(
+                ConverterFragmentViewModel.ConverterEvents.UpdateBalancesEvent(
                 binding.etConverterFrom.text.toString(),
                 binding.spConverterFromCurrency.selectedItem.toString(),
                 binding.spConverterToCurrency.selectedItem.toString(),
                 binding.etConverterTo.text.toString()
+                )
             )
         }
     }
@@ -168,10 +166,12 @@ class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentVi
         timerJob?.cancel()
         timerJob = CoroutineScope(Dispatchers.IO).launch {
             tickFlow(5000L).collect {
-                viewModel.convert(
-                    binding.etConverterFrom.text.toString(),
-                    binding.spConverterFromCurrency.selectedItem.toString(),
-                    binding.spConverterToCurrency.selectedItem.toString()
+                viewModel.channel.offer(
+                    ConverterFragmentViewModel.ConverterEvents.ConvertEvent(
+                        binding.etConverterFrom.text.toString(),
+                        binding.spConverterFromCurrency.selectedItem.toString(),
+                        binding.spConverterToCurrency.selectedItem.toString()
+                    )
                 )
             }
         }
@@ -218,7 +218,11 @@ class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentVi
         binding.etConverterFrom.doOnTextChanged { text, _, _, _ ->
             text?.let {
                 if (it.isNotEmpty()) {
-                    viewModel.updateInputQuery(it.toString())
+                    viewModel.channel.offer(
+                        ConverterFragmentViewModel.ConverterEvents.UpdateInputQueryEvent(
+                            it.toString()
+                        )
+                    )
                 }
             }
         }
@@ -233,7 +237,8 @@ class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentVi
                 id: Long
             ) {
                 val selected = resources.getStringArray(R.array.currency_codes)[position]
-                viewModel.updateCurrencyFromQuery(selected)
+                viewModel.channel.offer(
+                    ConverterFragmentViewModel.ConverterEvents.UpdateFromCurrencyEvent(selected))
             }
         }
         binding.spConverterToCurrency.onItemSelectedListener = object :
@@ -247,7 +252,9 @@ class ConverterFragment @Inject constructor() : BaseFragment<ConverterFragmentVi
                 id: Long
             ) {
                 val selected = resources.getStringArray(R.array.currency_codes)[position]
-                viewModel.updateCurrencyToQuery(selected)
+                viewModel.channel.offer(
+                    ConverterFragmentViewModel.ConverterEvents.UpdateToCurrencyEvent(selected)
+                )
             }
         }
     }

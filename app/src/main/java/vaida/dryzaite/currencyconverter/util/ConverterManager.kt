@@ -76,11 +76,13 @@ class ConverterManager @Inject constructor (private val repository: MainReposito
             val feeApplicable = checkFeeApplicable()
             val fee = calculateFee(feeApplicable, fromAmount)
 
-            val fromCurrencyBalanceInDb = balance.firstOrNull { it.currency == fromCurrency }
-            val toCurrencyBalanceInDb = balance.firstOrNull { it.currency == toCurrency }
+            val fromCurrencyBalanceInDb = balance
+                .firstOrNull { getMoneyCurrency(it) == fromCurrency }
+            val toCurrencyBalanceInDb = balance
+                .firstOrNull { getMoneyCurrency(it) == toCurrency }
             val fromCurrencyRemainderEnough = balance
-                .filter { it.currency.trim() == fromCurrency.trim() }
-                .map { it.amount.toFloat() >= (fromAmount + fee) }
+                .filter { getMoneyCurrency(it) == fromCurrency.trim() }
+                .map { getMoneyAmount(it) >= (fromAmount + fee) }
                 .firstOrNull()
 
             // validation
@@ -94,9 +96,9 @@ class ConverterManager @Inject constructor (private val repository: MainReposito
                         toCurrencyBalanceInDb.let {
                             repository.insertOrUpdateBalance(
                                 UserBalance(
-                                    it.currency,
+                                    getMoneyCurrency(it),
                                     roundTo2Decimals(
-                                        (it.amount.toFloat() + toAmount),
+                                        (getMoneyAmount(it) + toAmount),
                                         null
                                     ).toString()
                                 )
@@ -114,8 +116,8 @@ class ConverterManager @Inject constructor (private val repository: MainReposito
                     fromCurrencyBalanceInDb.let {
                         repository.insertOrUpdateBalance(
                             UserBalance(
-                                it.currency,
-                                roundTo2Decimals((it.amount.toDouble() - fromAmount),
+                                getMoneyCurrency(it),
+                                roundTo2Decimals((getMoneyAmount(it) - fromAmount),
                                     null
                                 ).toString()
                             )
@@ -136,7 +138,8 @@ class ConverterManager @Inject constructor (private val repository: MainReposito
                     feeApplicable))
 
             val updatedBalance = repository.getUserBalance()
-            val dialogInfo = repository.getAllOperations().find { it.id == operationID }
+            val dialogInfo = repository.getAllOperations()
+                .find { it.id == operationID }
 
             return BalanceUpdateEvent.Success(updatedBalance, dialogInfo!!, fee)
         } catch (exception: Exception) {
@@ -146,13 +149,13 @@ class ConverterManager @Inject constructor (private val repository: MainReposito
 
     private fun applyFee(balance: UserBalance, fee: Double) {
         val updatedBalance = repository.getUserBalance()
-            .find { it.currency == balance.currency }
+            .find { getMoneyCurrency(it) == getMoneyCurrency(balance) }
         updatedBalance?.let {
             repository.insertOrUpdateBalance(
                 UserBalance(
-                    it.currency,
+                    getMoneyCurrency(it),
                     roundTo2Decimals(
-                        (it.amount.toDouble() - fee),
+                        (getMoneyAmount(it) - fee),
                         null
                     ).toString()
                 )
@@ -174,5 +177,13 @@ class ConverterManager @Inject constructor (private val repository: MainReposito
 
     private fun roundTo2Decimals(amount: Double, rate: Double?): Double {
         return round(amount * (rate ?: 1.0) * 100) / 100
+    }
+
+    private fun getMoneyCurrency(balance: UserBalance): String {
+        return balance.getMoney().currencyUnit.currencyCode
+    }
+
+    private fun getMoneyAmount(balance: UserBalance): Double {
+        return balance.getMoney().amount.toDouble()
     }
 }
