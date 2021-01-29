@@ -7,8 +7,8 @@ open class UserOperation(
     @PrimaryKey
     var id: String = "",
     var currencyFrom: String = "",
-    var fromAmount: Double = 0.0,
+    var fromAmount: String = "0.0",
     var currencyTo: String = "",
-    var toAmount: Double = 0.0,
+    var toAmount: String = "0.0",
     var feeApplied: Boolean = false
 ) : RealmObject()
